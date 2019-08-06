@@ -1,12 +1,18 @@
 import os.path
 import config
-
-from cacher import *
-from sql import *
-
+import getpass
+import sys
+from cacher import (rExpireAllBalBTC, )
+from sql import (reorgRollback, dbSelect, updateProperty, expireAccepts, updateTxStats,
+                 updateLastRun, insertTx, checkPending, insertTxAddr, syncAddress,
+                 updateAddPending, insertBlock, expireCrowdsales)
+from common import (setdebug, printdebug)
 from datetime import datetime
 from datetime import timedelta
 from logger import get_logger
+from rpcclient import (getinfo, getblockhash, gettransaction_MP, getblock, listblocktransactions_MP)
+from sqltools import (dbCommit, dbRollback, dbExecute)
+
 
 lockFile = '/tmp/omniEngine.lock.{}'.format(getpass.getuser())
 now = datetime.now()
@@ -48,7 +54,7 @@ else:
         else:
             # invlid cmdline options use default value
             debuglevel = 5
-    except:
+    except Exception:
         # invlid cmdline options use default value
         debuglevel = 5
 
@@ -254,7 +260,7 @@ else:
         sys.exit(1)
 
     try:
-    #Also make sure we update the last run
+        # Also make sure we update the last run
         updateLastRun()
         dbCommit()
     except:
